@@ -32,31 +32,26 @@ const goBack = () => router.push({ name: 'productions-list' })
 
 const productionThemes = {
   'got-1399': {
-    // Lód i ogień - inspirowane smokami, zimą i rodem Targaryenów
     from: 'from-blue-600',
     via: 'via-slate-500',
     to: 'to-red-600',
   },
   'tvd-18165': {
-    // Ciemność i krew - inspirowane wampirzą tematyką
     from: 'from-red-900',
     via: 'via-purple-800',
     to: 'to-red-600',
   },
   'st-2016': {
-    // Neon i mrok - inspirowane estetyką lat 80. i "drugiej strony"
     from: 'from-pink-500',
     via: 'via-purple-600',
     to: 'to-indigo-700',
   },
   'the100-2014': {
-    // Zieleń i technologia - inspirowane post-apokaliptycznym światem
     from: 'from-green-600',
     via: 'via-teal-500',
     to: 'to-blue-600',
   },
   'tw-2011': {
-    // Księżyc i las - inspirowane wilkołaczą tematyką
     from: 'from-yellow-400',
     via: 'via-amber-600',
     to: 'to-gray-700',

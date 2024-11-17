@@ -6,14 +6,14 @@ const props = defineProps<{ castMember: CastMember }>()
 
 <template>
   <Card
-    class="w-72 m-4 rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 backdrop-blur-sm"
+    class="group w-72 m-4 rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 backdrop-blur-sm"
     :class="[
       { 'filter grayscale opacity-75 hover:grayscale-0 hover:opacity-100': !castMember.hasPhoto },
       { 'bg-gradient-to-br from-success/5 to-transparent': castMember.hasPhoto },
     ]"
   >
     <template #header>
-      <div class="w-full h-96 overflow-hidden group relative">
+      <div class="w-full h-96 overflow-hidden relative">
         <img
           :src="castMember.imageUrl"
           :alt="castMember.name"

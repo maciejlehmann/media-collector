@@ -4,7 +4,6 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Material from '@primevue/themes/material'
-import 'primeicons/primeicons.css'
 import { Icon } from '@iconify/vue'
 
 import App from './App.vue'
