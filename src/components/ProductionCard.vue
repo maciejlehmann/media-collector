@@ -50,10 +50,6 @@ const typeColors: Record<Production['type'], string> = {
           {{ production.title }}
         </div>
       </template>
-
-      <template #subtitle>
-        <div class="text-sm text-gray-600 dark:text-gray-400">{{ production.description?.substring(0, 100) }}...</div>
-      </template>
     </Card>
   </RouterLink>
 </template>

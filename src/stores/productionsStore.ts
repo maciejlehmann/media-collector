@@ -1,22 +1,28 @@
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore'
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import type { Production, ProductionsList, ThemeColors } from '@/types/productions'
 import type { ProductionActor, ProductionCastMembersList } from '@/types/cast'
-import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore'
 import type { ProductionCastMemberDocument } from '@/types/firestore'
 import { defineStore } from 'pinia'
 import { db } from '@/ts/firebase'
 import { ref } from 'vue'
 
 const DEFAULT_THEME: ThemeColors = {
-  fromColor: 'from-gray-500',
-  viaColor: 'via-gray-600',
-  toColor: 'to-gray-700'
+  color1: '#6B7280', // gray-500
+  color2: '#4B5563', // gray-600
+  color3: '#374151', // gray-700
+  color4: '#4B5563', // gray-600
+  color5: '#6B7280', // gray-500
+  animationDuration: '12s'
 }
 
 const FALLBACK_THEME: ThemeColors = {
-  fromColor: 'from-blue-500',
-  viaColor: 'via-indigo-500',
-  toColor: 'to-purple-500'
+  color1: '#3B82F6', // blue-500
+  color2: '#6366F1', // indigo-500
+  color3: '#A855F7', // purple-500
+  color4: '#6366F1', // indigo-500
+  color5: '#3B82F6', // blue-500
+  animationDuration: '12s'
 }
 
 export const useProductionsStore = defineStore('productions', () => {
@@ -27,15 +33,17 @@ export const useProductionsStore = defineStore('productions', () => {
     const data = doc.data()
     return {
       type: data.type as Production['type'],
-      description: data.description,
       imageUrl: data.imageUrl,
       title: data.title,
       year: data.year,
       id: doc.id,
       theme: {
-        fromColor: data.theme?.from,
-        viaColor: data.theme?.via,
-        toColor: data.theme?.to
+        color1: data.theme?.color1,
+        color2: data.theme?.color2,
+        color3: data.theme?.color3,
+        color4: data.theme?.color4,
+        color5: data.theme?.color5,
+        animationDuration: data.theme?.animationDuration
       }
     }
   }
@@ -45,9 +53,12 @@ export const useProductionsStore = defineStore('productions', () => {
     if (!production.theme) return FALLBACK_THEME
 
     return {
-      fromColor: production.theme.fromColor || FALLBACK_THEME.fromColor,
-      viaColor: production.theme.viaColor || FALLBACK_THEME.viaColor,
-      toColor: production.theme.toColor || FALLBACK_THEME.toColor
+      color1: production.theme.color1 || FALLBACK_THEME.color1,
+      color2: production.theme.color2 || FALLBACK_THEME.color2,
+      color3: production.theme.color3 || FALLBACK_THEME.color3,
+      color4: production.theme.color4 || FALLBACK_THEME.color4,
+      color5: production.theme.color5 || FALLBACK_THEME.color5,
+      animationDuration: production.theme.animationDuration || FALLBACK_THEME.animationDuration
     }
   }
 

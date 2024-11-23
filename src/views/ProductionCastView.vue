@@ -52,8 +52,15 @@ watchEffect(async () => {
 const goBack = () => router.push({ name: 'productions-list' })
 
 const gradientColors = computed(() => {
-  const theme = productionsStore.getProductionTheme(production.value)
-  return { from: theme.fromColor, via: theme.viaColor, to: theme.toColor }
+  if (!production.value) return {
+    color1: '',
+    color2: '',
+    color3: '',
+    color4: '',
+    color5: ''
+  }
+
+  return productionsStore.getProductionTheme(production.value)
 })
 </script>
 
@@ -68,13 +75,20 @@ const gradientColors = computed(() => {
 
       <div class="flex-1 text-center mx-4">
         <template v-if="!productionsStore.productions.loading && production">
-          <h1
-            class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight break-words"
-            style="text-shadow: 0 0 20px rgba(0, 0, 0, 0.3)"
-          >
+          <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight break-words">
             <span
-              class="bg-gradient-to-r bg-clip-text text-transparent animate-gradient"
-              :class="[gradientColors.from, gradientColors.via, gradientColors.to]"
+              class="animated-title"
+              :style="{
+                backgroundImage: `linear-gradient(
+                  to right,
+                  ${gradientColors.color1},
+                  ${gradientColors.color2},
+                  ${gradientColors.color3},
+                  ${gradientColors.color4},
+                  ${gradientColors.color5}
+                )`,
+                animationDuration: gradientColors.animationDuration || '12s'
+              }"
             >
               {{ production.title }}
             </span>
