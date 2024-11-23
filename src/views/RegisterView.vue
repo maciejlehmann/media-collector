@@ -11,7 +11,7 @@ import type {
   FormFieldResolver,
   RegisterFormState,
   ValidationError
-} from '@/types/types'
+} from '@/types/forms'
 
 const authStore = useAuthStore()
 const router = useRouter()

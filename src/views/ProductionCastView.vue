@@ -1,78 +1,59 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
-import { computed, onBeforeMount } from 'vue'
+import { useUserCastMemberStore } from '@/stores/userCastMemberStore'
 import { useProductionsStore } from '@/stores/productionsStore'
 import CastMemberCard from '@/components/CastMemberCard.vue'
+import { computed, onBeforeMount, watchEffect } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+import { useRoute, useRouter } from 'vue-router'
 
+const userCastMemberStore = useUserCastMemberStore()
+const productionsStore = useProductionsStore()
+const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
-const store = useProductionsStore()
 
-const production = computed(() => store.productions.list.find((prod) => prod.id === route.params.id))
+const production = computed(() =>
+  productionsStore.productions.list.find((prod) => prod.id === route.params.id)
+)
+
 const collectionStats = computed(() => {
-  const castMembers = store.productionCastMembers.list
+  if (!authStore.isAuthenticated) {
+    return {
+      photos: { collected: 0, total: productionsStore.productionCastMembers.list.length },
+      autos: { collected: 0, total: productionsStore.productionCastMembers.list.length }
+    }
+  }
+
+  const castMembers = productionsStore.productionCastMembers.list
   return {
     photos: {
-      collected: castMembers.filter((member) => member.hasPhoto).length,
-      total: castMembers.length,
+      collected: castMembers.filter(member => userCastMemberStore.checkUserCastMemberData(member.id).hasPhoto).length,
+      total: castMembers.length
     },
     autos: {
-      collected: castMembers.filter((member) => member.hasAuto).length,
-      total: castMembers.length,
-    },
+      collected: castMembers.filter(member => userCastMemberStore.checkUserCastMemberData(member.id).hasAuto).length,
+      total: castMembers.length
+    }
   }
 })
 
 onBeforeMount(async () => {
-  if (store.productions.list.length === 0) await store.getProductions()
-  await store.getProductionCastMembers(route.params.id as string)
+  if (productionsStore.productions.list.length === 0) await productionsStore.getProductions()
+  await productionsStore.getProductionCastMembers(route.params.id as string)
+})
+
+// Ładowanie danych użytkownika po zalogowaniu
+watchEffect(async () => {
+  if (authStore.isAuthenticated && authStore.user.id) {
+    await userCastMemberStore.getUserCastMemberData(authStore.user.id)
+  }
 })
 
 const goBack = () => router.push({ name: 'productions-list' })
 
-const productionThemes = {
-  'got-1399': {
-    from: 'from-blue-600',
-    via: 'via-slate-500',
-    to: 'to-red-600',
-  },
-  'tvd-18165': {
-    from: 'from-red-900',
-    via: 'via-purple-800',
-    to: 'to-red-600',
-  },
-  'st-2016': {
-    from: 'from-pink-500',
-    via: 'via-purple-600',
-    to: 'to-indigo-700',
-  },
-  'the100-2014': {
-    from: 'from-green-600',
-    via: 'via-teal-500',
-    to: 'to-blue-600',
-  },
-  'tw-2011': {
-    from: 'from-yellow-400',
-    via: 'via-amber-600',
-    to: 'to-gray-700',
-  },
-}
-
 const gradientColors = computed(() => {
-  if (!production.value)
-    return {
-      from: 'from-gray-500',
-      via: 'via-gray-600',
-      to: 'to-gray-700',
-    }
-
-  return (
-    productionThemes[production.value.id] || {
-      from: 'from-blue-500',
-      via: 'via-indigo-500',
-      to: 'to-purple-500',
-    }
-  )
+  const theme = productionsStore.getProductionTheme(production.value)
+  return { from: theme.fromColor, via: theme.viaColor, to: theme.toColor }
 })
 </script>
 
@@ -86,7 +67,7 @@ const gradientColors = computed(() => {
       </Button>
 
       <div class="flex-1 text-center mx-4">
-        <template v-if="!store.productions.loading && production">
+        <template v-if="!productionsStore.productions.loading && production">
           <h1
             class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight break-words"
             style="text-shadow: 0 0 20px rgba(0, 0, 0, 0.3)"
@@ -107,7 +88,11 @@ const gradientColors = computed(() => {
         </template>
       </div>
 
-      <Skeleton v-if="store.productions.loading && store.productionCastMembers.loading" height="2rem" width="15rem" />
+      <Skeleton
+        v-if="productionsStore.productions.loading && productionsStore.productionCastMembers.loading"
+        height="2rem"
+        width="15rem"
+      />
       <div
         v-else
         class="flex flex-col items-end gap-2 text-xl sm:text-2xl font-semibold text-gray-600 dark:text-gray-400"
@@ -124,7 +109,7 @@ const gradientColors = computed(() => {
     </div>
 
     <div class="flex flex-wrap justify-center gap-4">
-      <template v-if="store.productionCastMembers.loading">
+      <template v-if="productionsStore.productionCastMembers.loading">
         <div v-for="n in 12" :key="n" class="w-72 m-4">
           <Card>
             <template #header>
@@ -145,7 +130,7 @@ const gradientColors = computed(() => {
 
       <CastMemberCard
         v-else
-        v-for="castMember in store.productionCastMembers.list"
+        v-for="castMember in productionsStore.productionCastMembers.list"
         :key="castMember.id"
         :cast-member="castMember"
       />

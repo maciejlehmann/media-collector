@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import type { Production } from '@/types/types'
+import type { Production } from '@/types/productions'
 
 defineProps<{ production: Production }>()
 
 const typeTranslations: Record<Production['type'], string> = {
   series: 'Serial',
   movie: 'Film',
-  game: 'Gra',
+  game: 'Gra'
 }
 
 const typeColors: Record<Production['type'], string> = {
   movie: 'bg-blue-500/80 group-hover:bg-blue-500',
   series: 'bg-purple-500/80 group-hover:bg-purple-500',
-  game: 'bg-green-500/80 group-hover:bg-green-500',
+  game: 'bg-green-500/80 group-hover:bg-green-500'
 }
 </script>
 

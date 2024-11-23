@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useToast } from 'primevue/usetoast'
+import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
 const router = useRouter()

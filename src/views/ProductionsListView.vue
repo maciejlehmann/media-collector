@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onBeforeMount } from 'vue'
 import { useProductionsStore } from '@/stores/productionsStore'
 import ProductionCard from '@/components/ProductionCard.vue'
+import { onBeforeMount } from 'vue'
 
 const storeCollector = useProductionsStore()
 onBeforeMount(async () => await Promise.allSettled([storeCollector.getProductions()]))

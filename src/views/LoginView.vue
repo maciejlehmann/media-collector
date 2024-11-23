@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { LoginFormState, LoginFormSubmit } from '@/types/types'
 import { valibotResolver } from '@primevue/forms/resolvers/valibot'
 import { email, minLength, object, pipe, string } from 'valibot'
+import type { LoginFormSubmit, LoginFormState } from '@/types/forms'
 import { useAuthStore } from '@/stores/authStore'
 import { useToast } from 'primevue/usetoast'
 import { useRouter } from 'vue-router'
