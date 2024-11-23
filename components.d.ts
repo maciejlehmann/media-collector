@@ -11,10 +11,17 @@ declare module 'vue' {
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
     CastMemberCard: typeof import('./src/components/CastMemberCard.vue')['default']
+    Form: typeof import('@primevue/forms/form')['default']
+    FormField: typeof import('@primevue/forms/formfield')['default']
+    InputText: typeof import('primevue/inputtext')['default']
+    Message: typeof import('primevue/message')['default']
     MovieCard: typeof import('./src/components/MovieCard.vue')['default']
+    Password: typeof import('primevue/password')['default']
     ProductionCard: typeof import('./src/components/ProductionCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Skeleton: typeof import('primevue/skeleton')['default']
+    SystemHeader: typeof import('./src/components/SystemHeader.vue')['default']
+    Toast: typeof import('primevue/toast')['default']
   }
 }
