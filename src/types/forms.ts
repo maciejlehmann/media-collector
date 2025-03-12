@@ -1,4 +1,5 @@
-import type { FormFieldState, FormSubmitEvent } from 'primevue/forms'
+import type { FormFieldState, FormSubmitEvent } from "@primevue/forms"
+
 
 export interface BaseCredentials {
   email: string
@@ -11,7 +12,7 @@ export interface RegisterFormState extends BaseCredentials {
 
 export type LoginFormState = BaseCredentials
 
-export interface FormSubmitGeneric<T> extends FormSubmitEvent {
+export interface FormSubmitGeneric<T extends Record<string, any>> extends FormSubmitEvent {
   values: T
   states: Record<keyof T, FormFieldState>
 }

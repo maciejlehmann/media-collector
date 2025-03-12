@@ -6,20 +6,24 @@ import { useAuthStore } from '@/stores/authStore'
 import { useToast } from 'primevue/usetoast'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { FirebaseError } from 'firebase/app'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
 const toast = useToast()
+const isLoading = ref(false)
 
 const loginSchema = object({
   email: pipe(
-    string('Email jest wymagany'),
-    minLength(1, 'Email jest wymagany'),
-    email('Nieprawidłowy format email')
+    string(t('login.emailRequired')),
+    minLength(1, t('login.emailRequired')),
+    email(t('login.invalidEmail'))
   ),
   password: pipe(
-    string('Hasło jest wymagane'),
-    minLength(6, 'Hasło musi mieć minimum 6 znaków')
+    string(t('login.passwordRequired')),
+    minLength(6, t('login.passwordMinLength'))
   )
 })
 
@@ -29,50 +33,56 @@ const resolver = valibotResolver(loginSchema)
 
 const onFormSubmit = async (e: LoginFormSubmit) => {
   if (e.valid) {
+    isLoading.value = true
     try {
       await authStore.loginUser({ email: e.values.email, password: e.values.password })
 
       toast.add({
         severity: 'success',
-        summary: 'Zalogowano pomyślnie',
-        detail: 'Witaj z powrotem!',
+        summary: t('login.successTitle'),
+        detail: t('login.successMessage'),
         life: 3000
       })
 
-      // Przekierowanie na stronę główną po zalogowaniu
+      // Redirect to home page after login
       router.push({ name: 'productions-list' })
     } catch (error: unknown) {
-      let errorMessage = 'Nieznany błąd podczas logowania'
+      let errorMessage = t('login.errorUnknown')
 
-      if (error instanceof Error) {
-        // Mapowanie kodów błędów Firebase na przyjazne komunikaty
-        switch (error.message) {
+      if (error instanceof Error && 'code' in error) {
+        // Map Firebase error codes to user-friendly messages
+        const firebaseError = error as FirebaseError
+        switch (firebaseError.code) {
           case 'auth/user-not-found':
-            errorMessage = 'Nie znaleziono użytkownika o podanym adresie email'
+            errorMessage = t('login.errorUserNotFound')
             break
           case 'auth/wrong-password':
-            errorMessage = 'Nieprawidłowe hasło'
+            errorMessage = t('login.errorWrongPassword')
             break
           case 'auth/invalid-email':
-            errorMessage = 'Nieprawidłowy adres email'
+            errorMessage = t('login.errorInvalidEmail')
             break
           case 'auth/user-disabled':
-            errorMessage = 'To konto zostało zablokowane'
+            errorMessage = t('login.errorUserDisabled')
             break
           case 'auth/too-many-requests':
-            errorMessage = 'Zbyt wiele nieudanych prób logowania. Spróbuj ponownie później'
+            errorMessage = t('login.errorTooManyRequests')
             break
           default:
-            errorMessage = 'Błąd podczas logowania. Spróbuj ponownie'
+            errorMessage = t('login.errorDefault')
         }
+      } else if (error instanceof Error) {
+        errorMessage = error.message
       }
 
       toast.add({
         severity: 'error',
-        summary: 'Błąd logowania',
+        summary: t('login.errorTitle'),
         detail: errorMessage,
         life: 5000
       })
+    } finally {
+      isLoading.value = false
     }
   }
 }
@@ -84,7 +94,7 @@ const onFormSubmit = async (e: LoginFormSubmit) => {
       <Toast />
 
       <h2 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
-        Zaloguj się
+        {{ t('login.title') }}
       </h2>
 
       <Form
@@ -123,7 +133,7 @@ const onFormSubmit = async (e: LoginFormSubmit) => {
           class="flex flex-col gap-1"
         >
           <Password
-            placeholder="Hasło"
+            :placeholder="t('login.passwordLabel')"
             :feedback="false"
             toggleMask
             class="w-full"
@@ -142,17 +152,18 @@ const onFormSubmit = async (e: LoginFormSubmit) => {
         <div class="flex flex-col gap-4">
           <Button
             type="submit"
-            label="Zaloguj się"
+            :label="isLoading ? t('login.buttonLoggingIn') : t('login.buttonLogin')"
+            :disabled="isLoading"
             class="w-full"
           />
 
           <div class="text-center text-sm text-gray-600 dark:text-gray-400">
-            Nie masz jeszcze konta?
+            {{ t('login.noAccount') }}
             <RouterLink
               :to="{ name: 'register-page' }"
               class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
-              Zarejestruj się
+              {{ t('login.register') }}
             </RouterLink>
           </div>
         </div>

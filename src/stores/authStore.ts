@@ -63,7 +63,6 @@ export const useAuthStore = defineStore('auth', () => {
           error.value = 'Błąd podczas inicjalizacji autoryzacji'
         } finally {
           loading.value = false
-          unsubscribe() // Odpinamy listener po pierwszej inicjalizacji
         }
       })
     })

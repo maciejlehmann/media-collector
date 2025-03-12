@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { email, minLength, object, pipe, regex, string } from 'valibot'
+import { email, minLength, object, pipe, regex, string, custom } from 'valibot'
 import { valibotResolver } from '@primevue/forms/resolvers/valibot'
 import { useAuthStore } from '@/stores/authStore'
 import { useToast } from 'primevue/usetoast'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { FirebaseError } from 'firebase/app'
 import type {
   FormFieldResolverContext,
   RegisterFormSubmit,
@@ -12,81 +14,95 @@ import type {
   RegisterFormState,
   ValidationError
 } from '@/types/forms'
+import type { FormFieldResolverOptions } from '@primevue/forms'
+
+const { t } = useI18n()
 
 const authStore = useAuthStore()
 const router = useRouter()
 const toast = useToast()
+const isLoading = ref(false)
 
 const passwordValidation = pipe(
-  string('Hasło jest wymagane'),
-  minLength(6, 'Hasło musi mieć minimum 6 znaków'),
-  regex(/[A-Z]/, 'Hasło musi zawierać wielką literę'),
-  regex(/[0-9]/, 'Hasło musi zawierać cyfrę')
+  string(t('register.passwordRequired')),
+  minLength(6, t('register.passwordMinLength')),
+  regex(/[A-Z]/, t('register.passwordUppercase')),
+  regex(/[0-9]/, t('register.passwordDigit'))
 )
 
 const registerSchema = object({
   email: pipe(
-    string('Email jest wymagany'),
-    minLength(1, 'Email jest wymagany'),
-    email('Nieprawidłowy format email')
+    string(t('register.emailRequired')),
+    minLength(1, t('register.emailRequired')),
+    email(t('register.invalidEmail'))
   ),
   password: passwordValidation,
-  confirmPassword: passwordValidation
+  confirmPassword: pipe(
+    string(t('register.confirmPasswordRequired')),
+    minLength(1, t('register.confirmPasswordRequired')),
+    custom<string>((value, ctx) => value === ctx.parent.password, t('register.passwordsNotMatch'))
+  )
 })
 
 const initialValues = ref<RegisterFormState>({ email: '', password: '', confirmPassword: '' })
 
-const confirmPasswordResolver: FormFieldResolver = (
-  context: FormFieldResolverContext<RegisterFormState>
-) => {
+const confirmPasswordResolver = (context: FormFieldResolverOptions) => {
   const errors: ValidationError[] = []
-  const formValues = context.form?.getValues()
 
-  if (!formValues) return { errors }
-
-  if (context.value !== formValues.password) errors.push({ message: 'Hasła nie są takie same' })
+  if (context.value.confirmPassword !== context.value.password) errors.push({ message: t('register.passwordsNotMatch') })
 
   return { errors }
 }
 
 const onFormSubmit = async (e: RegisterFormSubmit) => {
   if (e.valid) {
+    isLoading.value = true
     try {
       await authStore.registerUser({ email: e.values.email, password: e.values.password })
 
       toast.add({
         severity: 'success',
-        summary: 'Rejestracja pomyślna',
-        detail: 'Twoje konto zostało utworzone',
+        summary: t('register.successTitle'),
+        detail: t('register.successMessage'),
         life: 3000
       })
 
-      // Przekierowanie na stronę logowania
+      // Redirect to login page
       router.push({ name: 'login-page' })
     } catch (error: unknown) {
-      let errorMessage = 'Nieznany błąd podczas rejestracji'
+      let errorMessage = t('register.errorUnknown')
 
-      if (error instanceof Error) {
-        // Mapowanie kodów błędów Firebase na przyjazne komunikaty
-        switch (error.message) {
+      if (error instanceof Error && 'code' in error) {
+        // Map Firebase error codes to user-friendly messages
+        const firebaseError = error as FirebaseError
+        switch (firebaseError.code) {
           case 'auth/email-already-in-use':
-            errorMessage = 'Ten adres email jest już zarejestrowany'
+            errorMessage = t('register.errorEmailInUse')
             break
           case 'auth/invalid-email':
-            errorMessage = 'Nieprawidłowy adres email'
+            errorMessage = t('register.errorInvalidEmail')
             break
           case 'auth/operation-not-allowed':
-            errorMessage = 'Rejestracja jest obecnie niedostępna'
+            errorMessage = t('register.errorOperationNotAllowed')
             break
           case 'auth/weak-password':
-            errorMessage = 'Hasło jest zbyt słabe'
+            errorMessage = t('register.errorWeakPassword')
             break
           default:
-            errorMessage = error.message
+            errorMessage = firebaseError.message
         }
+      } else if (error instanceof Error) {
+        errorMessage = error.message
       }
 
-      toast.add({ severity: 'error', summary: 'Błąd rejestracji', detail: errorMessage, life: 5000 })
+      toast.add({
+        severity: 'error',
+        summary: t('register.errorTitle'),
+        detail: errorMessage,
+        life: 5000
+      })
+    } finally {
+      isLoading.value = false
     }
   }
 }
@@ -98,7 +114,7 @@ const onFormSubmit = async (e: RegisterFormSubmit) => {
       <Toast />
 
       <h2 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
-        Zarejestruj się
+        {{ t('register.title') }}
       </h2>
 
       <Form
@@ -107,10 +123,10 @@ const onFormSubmit = async (e: RegisterFormSubmit) => {
         :resolver="valibotResolver(registerSchema)"
         :validate-on-blur="true"
         :validate-on-value-update="['email']"
+        class="flex flex-col gap-4"
         :validate-on-mount="false"
         :validate-on-submit="true"
         @submit="onFormSubmit"
-        class="flex flex-col gap-4"
       >
         <FormField
           v-slot="$field"
@@ -140,7 +156,7 @@ const onFormSubmit = async (e: RegisterFormSubmit) => {
           class="flex flex-col gap-1"
         >
           <Password
-            placeholder="Hasło"
+            placeholder="Password"
             :feedback="true"
             toggleMask
             class="w-full"
@@ -168,7 +184,7 @@ const onFormSubmit = async (e: RegisterFormSubmit) => {
           class="flex flex-col gap-1"
         >
           <Password
-            placeholder="Potwierdź hasło"
+            placeholder="Confirm Password"
             :feedback="false"
             toggleMask
             class="w-full"
@@ -188,17 +204,18 @@ const onFormSubmit = async (e: RegisterFormSubmit) => {
         <div class="flex flex-col gap-4">
           <Button
             type="submit"
-            label="Zarejestruj się"
+            :label="isLoading ? t('register.buttonRegistering') : t('register.buttonRegister')"
+            :disabled="isLoading"
             class="w-full"
           />
 
           <div class="text-center text-sm text-gray-600 dark:text-gray-400">
-            Masz już konto?
+            {{ t('register.haveAccount') }}
             <router-link
               :to="{ name: 'login-page' }"
               class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
-              Zaloguj się
+              {{ t('register.login') }}
             </router-link>
           </div>
         </div>

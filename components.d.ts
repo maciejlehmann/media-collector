@@ -20,6 +20,7 @@ declare module 'vue' {
     ProductionCard: typeof import('./src/components/ProductionCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Select: typeof import('primevue/select')['default']
     Skeleton: typeof import('primevue/skeleton')['default']
     SystemHeader: typeof import('./src/components/SystemHeader.vue')['default']
     Toast: typeof import('primevue/toast')['default']
