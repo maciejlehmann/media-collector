@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@use "tailwindcss" as *;
 
 // Zmienne dla animacji gradientu
 $gradient-animation-duration: 12s;
