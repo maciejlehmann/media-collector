@@ -12,28 +12,40 @@ const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
-const production = computed(() =>
-  productionsStore.productions.list.find((prod) => prod.id === route.params.id)
-)
+const production = computed(() => productionsStore.productions.list.find((prod) => prod.id === route.params.id))
 
 const collectionStats = computed(() => {
   if (!authStore.isAuthenticated) {
     return {
       photos: { collected: 0, total: productionsStore.productionCastMembers.list.length },
-      autos: { collected: 0, total: productionsStore.productionCastMembers.list.length }
+      autos: { collected: 0, total: productionsStore.productionCastMembers.list.length },
+      wantedPhotos: { count: 0 },
+      wantedAutos: { count: 0 },
     }
   }
 
   const castMembers = productionsStore.productionCastMembers.list
   return {
     photos: {
-      collected: castMembers.filter(member => userCastMemberStore.checkUserCastMemberData(member.id).hasPhoto).length,
-      total: castMembers.length
+      collected: castMembers.filter(
+        (member) => userCastMemberStore.checkUserCastMemberData(member.castMemberId).hasPhot,
+      ).length,
+      total: castMembers.lengt,
     },
     autos: {
-      collected: castMembers.filter(member => userCastMemberStore.checkUserCastMemberData(member.id).hasAuto).length,
-      total: castMembers.length
-    }
+      collected: castMembers.filter(
+        (member) => userCastMemberStore.checkUserCastMemberData(member.castMemberId).hasAuto,
+      ).length,
+      total: castMembers.length,
+    },
+    wantedPhotos: {
+      count: castMembers.filter((member) => userCastMemberStore.checkUserCastMemberData(member.castMemberId).wantsPhoto)
+        .length,
+    },
+    wantedAutos: {
+      count: castMembers.filter((member) => userCastMemberStore.checkUserCastMemberData(member.castMemberId).wantsAuto)
+        .length,
+    },
   }
 })
 
@@ -52,13 +64,14 @@ watchEffect(async () => {
 const goBack = () => router.push({ name: 'productions-list' })
 
 const gradientColors = computed(() => {
-  if (!production.value) return {
-    color1: '',
-    color2: '',
-    color3: '',
-    color4: '',
-    color5: ''
-  }
+  if (!production.value)
+    return {
+      color1: '',
+      color2: '',
+      color3: '',
+      color4: '',
+      color: '',
+    }
 
   return productionsStore.getProductionTheme(production.value)
 })
@@ -87,7 +100,7 @@ const gradientColors = computed(() => {
                   ${gradientColors.color4},
                   ${gradientColors.color5}
                 )`,
-                animationDuration: gradientColors.animationDuration || '12s'
+                animationDuration: gradientColors.animationDuration || '12s',
               }"
             >
               {{ production.title }}
@@ -118,6 +131,16 @@ const gradientColors = computed(() => {
         <div class="flex items-center gap-2 whitespace-nowrap text-purple-500">
           <IconifyIcon icon="mdi:draw-pen" width="24" />
           <span>{{ collectionStats.autos.collected }}/{{ collectionStats.autos.total }}</span>
+        </div>
+        <div class="flex items-center gap-2 whitespace-nowrap text-blue-400">
+          <IconifyIcon icon="mdi:bookmark-outline" width="24" />
+          <IconifyIcon class="opacity-70" icon="mdi:camera" width="20" />
+          <span>{{ collectionStats.wantedPhotos?.count || 0 }}</span>
+        </div>
+        <div class="flex items-center gap-2 whitespace-nowrap text-purple-400">
+          <IconifyIcon icon="mdi:bookmark-outline" width="24" />
+          <IconifyIcon class="opacity-70" icon="mdi:draw-pen" width="20" />
+          <span>{{ collectionStats.wantedAutos?.count || 0 }}</span>
         </div>
       </div>
     </div>

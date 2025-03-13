@@ -10,24 +10,48 @@ const auth = useAuthStore()
 const userCastMemberStore = useUserCastMemberStore()
 
 const userCollectionStatus = computed(() => {
-  if (!auth.user.id) return { hasPhoto: false, hasAuto: false }
+  if (!auth.user.id) return { hasPhoto: false, hasAuto: false, wantsAuto: false, wantsPhoto: false }
   return userCastMemberStore.checkUserCastMemberData(props.castMember.castMemberId)
 })
 
 const togglePhoto = async () => {
   if (!auth.user.id) return
 
-  await userCastMemberStore.setUserCastMemberData(auth.user.id, props.castMember.castMemberId,
-    { hasPhoto: !userCollectionStatus.value.hasPhoto, hasAuto: userCollectionStatus.value.hasAuto }
-  )
+  await userCastMemberStore.setUserCastMemberData(auth.user.id, props.castMember.castMemberId, {
+    hasPhoto: !userCollectionStatus.value.hasPhoto,
+    hasAuto: userCollectionStatus.value.hasAuto,
+  })
 }
 
 const toggleAuto = async () => {
   if (!auth.user.id) return
 
-  await userCastMemberStore.setUserCastMemberData(auth.user.id, props.castMember.castMemberId,
-    { hasAuto: !userCollectionStatus.value.hasAuto, hasPhoto: userCollectionStatus.value.hasPhoto }
-  )
+  await userCastMemberStore.setUserCastMemberData(auth.user.id, props.castMember.castMemberId, {
+    hasAuto: !userCollectionStatus.value.hasAuto,
+    hasPhoto: userCollectionStatus.value.hasPhot,
+  })
+}
+
+const toggleWantsPhoto = async () => {
+  if (!auth.user.id) return
+
+  await userCastMemberStore.setUserCastMemberData(auth.user.id, props.castMember.castMemberId, {
+    wantsPhoto: !userCollectionStatus.value.wantsPhoto,
+    wantsAuto: userCollectionStatus.value.wantsAuto,
+    hasPhoto: userCollectionStatus.value.hasPhoto,
+    hasAuto: userCollectionStatus.value.hasAut,
+  })
+}
+
+const toggleWantsAuto = async () => {
+  if (!auth.user.id) return
+
+  await userCastMemberStore.setUserCastMemberData(auth.user.id, props.castMember.castMemberId, {
+    wantsPhoto: userCollectionStatus.value.wantsPhoto,
+    wantsAuto: !userCollectionStatus.value.wantsAuto,
+    hasPhoto: userCollectionStatus.value.hasPhoto,
+    hasAuto: userCollectionStatus.value.hasAut,
+  })
 }
 </script>
 
@@ -88,6 +112,38 @@ const toggleAuto = async () => {
             <IconifyIcon
               :icon="userCollectionStatus.hasAuto ? 'mdi:check-circle' : 'mdi:draw-pen'"
               :class="userCollectionStatus.hasAuto ? 'text-white' : 'text-gray-50'"
+              width="32"
+            />
+          </template>
+        </Button>
+        <Button
+          :class="['w-full font-semibold']"
+          :disabled="!auth.isAuthenticated || userCollectionStatus.hasPhoto"
+          :label="userCollectionStatus.wantsPhoto ? 'Chcę zdjęcie ✓' : 'Chcę zdjęcie'"
+          :severity="userCollectionStatus.wantsPhoto ? 'info' : 'secondary'"
+          class="p-button-flex"
+          @click="toggleWantsPhoto"
+        >
+          <template #icon>
+            <IconifyIcon
+              :class="userCollectionStatus.wantsPhoto ? 'text-white' : 'text-gray-50'"
+              icon="mdi:star"
+              width="32"
+            />
+          </template>
+        </Button>
+        <Button
+          :class="['w-full font-semibold']"
+          :disabled="!auth.isAuthenticated || userCollectionStatus.hasAuto"
+          :label="userCollectionStatus.wantsAuto ? 'Chcę autograf ✓' : 'Chcę autograf'"
+          :severity="userCollectionStatus.wantsAuto ? 'info' : 'secondary'"
+          class="p-button-flex"
+          @click="toggleWantsAuto"
+        >
+          <template #icon>
+            <IconifyIcon
+              :class="userCollectionStatus.wantsAuto ? 'text-white' : 'text-gray-50'"
+              icon="mdi:star"
               width="32"
             />
           </template>

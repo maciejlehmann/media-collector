@@ -1,4 +1,6 @@
 export interface UserCastMemberStatus {
+  wantsPhoto: boolean
+  wantsAuto: boolean
   hasPhoto: boolean
   hasAuto: boolean
 }

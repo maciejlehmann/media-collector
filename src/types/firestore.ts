@@ -10,6 +10,8 @@ export interface ProductionCastMemberDocument {
 export interface FirestoreUserCastMemberData {
   castMemberId: string
   updatedAt: Timestamp
+  wantsPhoto: boolean
+  wantsAuto: boolean
   hasPhoto: boolean
   hasAuto: boolean
   userId: string

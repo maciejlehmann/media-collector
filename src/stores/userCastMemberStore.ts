@@ -15,10 +15,7 @@ export const useUserCastMemberStore = defineStore('userCastMember', () => {
       loading.value = true
       error.value = null
 
-      const q = query(
-        collection(db, 'userCastMembers'),
-        where('userId', '==', userId)
-      )
+      const q = query(collection(db, 'userCastMembers'), where('userId', '==', userId))
 
       const querySnapshot = await getDocs(q)
       const data: UserCastMemberState = {}
@@ -27,8 +24,10 @@ export const useUserCastMemberStore = defineStore('userCastMember', () => {
         // Teraz używamy bezpośrednio ID aktora z dokumentu
         const docData = doc.data() as FirestoreUserCastMemberData
         data[docData.castMemberId] = {
+          wantsPhoto: docData.wantsPhoto,
+          wantsAuto: docData.wantsAuto,
           hasPhoto: docData.hasPhoto,
-          hasAuto: docData.hasAuto
+          hasAuto: docData.hasAuto,
         }
       })
 
@@ -46,7 +45,7 @@ export const useUserCastMemberStore = defineStore('userCastMember', () => {
   const setUserCastMemberData = async (
     userId: string,
     castMemberId: string,
-    data: Partial<UserCastMemberStatus>
+    data: Partial<UserCastMemberStatus,
   ): Promise<void> => {
     try {
       loading.value = true
@@ -54,22 +53,26 @@ export const useUserCastMemberStore = defineStore('userCastMember', () => {
 
       const docId = `${userId}_${castMemberId}`
 
-      if (!data.hasPhoto && !data.hasAuto) {
+      if (!data.hasPhoto && !data.hasAuto && !data.wantsAuto && !data.wantsPhoto) {
         await deleteUserCastMemberData(userId, castMemberId)
         return
       }
 
       const docData = {
-        userId,
-        castMemberId,
+        wantsPhoto: !!data.wantsPhoto,
+        updatedAt: serverTimestamp(),
+        wantsAuto: !!data.wantsAuto,
         hasPhoto: !!data.hasPhoto,
         hasAuto: !!data.hasAuto,
-        updatedAt: serverTimestamp()
+        castMemberId,
+        userId
       }
 
       await setDoc(doc(db, 'userCastMembers', docId), docData, { merge: true })
 
       userCastMemberData.value[castMemberId] = {
+        wantsPhoto: !!data.wantsAuto,
+        wantsAuto: !!data.wantsAuto,
         hasPhoto: !!data.hasPhoto,
         hasAuto: !!data.hasAuto
       }
@@ -104,6 +107,8 @@ export const useUserCastMemberStore = defineStore('userCastMember', () => {
     const data = userCastMemberData.value[castMemberId]
 
     return {
+      wantsPhoto: data?.wantsPhoto || false,
+      wantsAuto: data?.wantsAuto || false,
       hasPhoto: data?.hasPhoto || false,
       hasAuto: data?.hasAuto || false
     }
