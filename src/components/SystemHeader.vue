@@ -17,7 +17,7 @@ const languages = [
   { name: t('header.german'), code: 'de' },
   { name: t('header.french'), code: 'fr' },
   { name: t('header.italian'), code: 'it' },
-  { name: t('header.spanish'), code: 'es' }
+  { name: t('header.spanish'), code: 'es' },
 ]
 
 // Current language
@@ -43,7 +43,7 @@ const handleLogout = async () => {
       severity: 'error',
       summary: t('header.logoutError'),
       detail: error instanceof Error ? error.message : t('header.unknownError'),
-      life: 3000
+      life: 300,
     })
   }
 }
@@ -54,17 +54,12 @@ const handleLogout = async () => {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
         <div class="flex-shrink-0">
-          <RouterLink
-            class="text-xl font-bold text-white hover:text-gray-200"
-            :to="{ name: 'productions-list' }"
-          >
+          <RouterLink :to="{ name: 'productions-list' }" class="text-xl font-bold text-white hover:text-gray-200">
             {{ t('header.appName') }}
           </RouterLink>
         </div>
-
-        <!-- Language Switcher -->
         <div class="flex items-center">
-          <Dropdown
+          <Select
             v-model="currentLanguage"
             :options="languages"
             optionLabel="name"
@@ -74,7 +69,7 @@ const handleLogout = async () => {
           >
             <template #value="slotProps">
               <div v-if="slotProps.value" class="flex items-center">
-                <span>{{ languages.find(lang => lang.code === slotProps.value)?.name }}</span>
+                <span>{{ languages.find((lang) => lang.code === slotProps.value)?.name }}</span>
               </div>
               <span v-else>
                 {{ t('header.language') }}
@@ -85,9 +80,8 @@ const handleLogout = async () => {
                 <span>{{ slotProps.option.name }}</span>
               </div>
             </template>
-          </Dropdown>
+          </Select>
         </div>
-
         <div v-if="!authStore.user.id" class="flex gap-4">
           <Button
             class="hover:bg-blue-700/10"
@@ -96,18 +90,10 @@ const handleLogout = async () => {
             outlined
             @click="navigateToLogin"
           />
-          <Button
-            class="hover:bg-blue-600"
-            :label="t('header.register')"
-            severity="info"
-            @click="navigateToRegister"
-          />
+          <Button :label="t('header.register')" class="hover:bg-blue-600" severity="info" @click="navigateToRegister" />
         </div>
-
         <div v-else class="flex items-center gap-4">
-          <span class="text-gray-300">
-            {{ authStore.user.email }}
-          </span>
+          <span class="text-gray-300">{{ authStore.user.email }}</span>
           <Button
             class="hover:bg-red-700/10"
             :label="t('header.logout')"
